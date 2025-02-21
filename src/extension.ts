@@ -13,7 +13,6 @@ class SQLInsertInlayHintsProvider implements vscode.InlayHintsProvider {
     const hints: vscode.InlayHint[] = [];
     const text = document.getText();
 
-    // Regular expression to match INSERT statements
     const insertRegex = /INSERT\s+INTO\s+\w+\s*\((.*?)\)\s*VALUES\s*\(([\s\S]*?)\)/gi;
 
     let match;
@@ -25,22 +24,23 @@ class SQLInsertInlayHintsProvider implements vscode.InlayHintsProvider {
       const columnsStr = match[1];
       const valuesStr = match[2];
 
-      // Parse columns and values
       const columns = columnsStr.split(",").map((col) => col.trim());
       const values = this.parseValues(valuesStr);
 
       if (columns.length !== values.length) {
-        continue; // Skip if columns and values don't match
+        continue;
       }
 
-      // Calculate the position for each value
-      const valuePositions = this.findValuePositions(document, match.index, valuesStr);
+      const valuesClauseStart = text.toUpperCase().indexOf("VALUES", match.index);
+      const valuesStart = text.indexOf("(", valuesClauseStart) + 1;
 
-      // Create hints for each value
-      for (let i = 0; i < columns.length; i++) {
-        if (valuePositions[i]) {
-          const hint = new vscode.InlayHint(valuePositions[i], `${columns[i]}: `, vscode.InlayHintKind.Parameter);
-          hints.push(hint);
+      let currentPos = valuesStart;
+      for (let i = 0; i < values.length; i++) {
+        const value = values[i].trim();
+        const valuePos = text.indexOf(value, currentPos);
+        if (valuePos !== -1) {
+          hints.push(new vscode.InlayHint(document.positionAt(valuePos), `${columns[i]}: `, vscode.InlayHintKind.Parameter));
+          currentPos = valuePos + value.length;
         }
       }
     }
@@ -74,39 +74,5 @@ class SQLInsertInlayHintsProvider implements vscode.InlayHintsProvider {
     }
 
     return values;
-  }
-
-  private findValuePositions(document: vscode.TextDocument, startIndex: number, valuesStr: string): vscode.Position[] {
-    const positions: vscode.Position[] = [];
-    let currentValue = "";
-    let currentPos = 0;
-    let inString = false;
-    let depth = 0;
-
-    for (let i = 0; i < valuesStr.length; i++) {
-      const char = valuesStr[i];
-
-      if (char === "(" && !inString) {
-        depth++;
-      } else if (char === ")" && !inString) {
-        depth--;
-      } else if (char === "'") {
-        inString = !inString;
-      } else if (char === "," && !inString && depth === 0) {
-        const valueStartOffset = startIndex + document.getText().indexOf(currentValue.trim(), currentPos);
-        positions.push(document.positionAt(valueStartOffset));
-        currentValue = "";
-        currentPos = i + 1;
-        continue;
-      }
-      currentValue += char;
-    }
-
-    if (currentValue) {
-      const valueStartOffset = startIndex + document.getText().indexOf(currentValue.trim(), currentPos);
-      positions.push(document.positionAt(valueStartOffset));
-    }
-
-    return positions;
   }
 }
