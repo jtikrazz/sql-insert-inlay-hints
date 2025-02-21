@@ -4,4 +4,4 @@
 
 ---
 
-This extension Provides inlay hints for your SQL INSERT statements.
+This extension provides inlay hints for your SQL INSERT statements.
