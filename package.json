@@ -4,7 +4,7 @@
   "displayName": "Sql Insert Inlay Hints",
   "description": "Provides inlay hints for SQL INSERT statements",
   "icon": "extension-icon.png",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "repository": {
     "type": "git",
     "url": "https://github.com/jtikrazz/sql-insert-inlay-hints"
