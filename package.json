@@ -1,16 +1,20 @@
 {
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
   "publisher": "jtikrazz",
   "name": "sql-insert-inlay-hints",
-  "displayName": "Sql Insert Inlay Hints",
+  "displayName": "SQL Insert Inlay Hints",
   "description": "Provides inlay hints for SQL INSERT INTO statements",
-  "icon": "extension-icon.png",
-  "version": "1.0.6",
+  "icon": "src/extension-icon.png",
+  "version": "1.0.7",
   "repository": {
     "type": "git",
     "url": "https://github.com/jtikrazz/sql-insert-inlay-hints"
   },
   "engines": {
-    "vscode": "^1.97.0"
+    "vscode": "^1.0.0"
   },
   "categories": [
     "Programming Languages"
@@ -29,11 +33,7 @@
       }
     ]
   },
-  "scripts": {
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./"
-  },
   "devDependencies": {
-    "@types/vscode": "^1.97.0"
+    "@types/vscode": "^1.0.0"
   }
 }
