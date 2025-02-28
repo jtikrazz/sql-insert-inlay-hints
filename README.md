@@ -8,9 +8,9 @@ This extension provides inlay hints for your SQL INSERT INTO statements.
 
 ## Installation
 
-Install through VS Code extensions: search for `Sql Insert Inlay Hints`.
+Install through VS Code extensions: search for `SQL Insert Inlay Hints`.
 
-[Visual Studio Code Market Place: Sql Insert Inlay Hints](https://marketplace.visualstudio.com/items?itemName=jtikrazz.sql-insert-inlay-hints)
+[Visual Studio Code Market Place: SQL Insert Inlay Hints](https://marketplace.visualstudio.com/items?itemName=jtikrazz.sql-insert-inlay-hints)
 
 Can also be installed in VS Code: launch VS Code Quick Open (Ctrl+P), paste the following command, and press enter.
 
