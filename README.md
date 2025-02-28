@@ -4,7 +4,7 @@
 
 This extension provides inlay hints for your SQL INSERT INTO statements.
 
-![demo](https://github.com/jtikrazz/sql-insert-inlay-hints/blob/main/demo.gif?raw=true)
+![demo](https://github.com/jtikrazz/sql-insert-inlay-hints/blob/main/src/demo/sql-insert-inlay-hints/demo.gif?raw=true)
 
 ## Installation
 
