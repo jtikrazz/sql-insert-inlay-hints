@@ -1,5 +1,7 @@
 export type ParsedInsert = {
   columns: string[];
-  values: string[];
-  valuesStartPosition: number;
+  valueRows: {
+    values: string[];
+    position: number;
+  }[];
 };

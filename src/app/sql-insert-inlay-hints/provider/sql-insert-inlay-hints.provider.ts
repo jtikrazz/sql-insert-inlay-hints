@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { ParsedInsert } from "../type/parsed-insert.type";
 
-const SQL_INSERT_PATTERN = /INSERT\s+INTO\s+"?\w+"?\s*\((.*?)\)\s*VALUES\s*\(([\s\S]*?)\)/gis;
+const SQL_INSERT_PATTERN = /INSERT\s+INTO\s+"?\w+"?\s*\((.*?)\)\s*VALUES\s*((?:\s*\([^)]+\)\s*,?)+)/gis;
 
 class SQLInsertInlayHintsProvider implements vscode.InlayHintsProvider {
   public async provideInlayHints(document: vscode.TextDocument, range: vscode.Range, token: vscode.CancellationToken): Promise<vscode.InlayHint[]> {
@@ -28,14 +28,31 @@ class SQLInsertInlayHintsProvider implements vscode.InlayHintsProvider {
 
     while ((match = SQL_INSERT_PATTERN.exec(text)) !== null) {
       const columnsStr = match[1];
-      const valuesStr = match[2];
+      const valuesGroupStr = match[2];
       const valuesClauseStart = text.toUpperCase().indexOf("VALUES", match.index);
-      const valuesStartPosition = text.indexOf("(", valuesClauseStart) + 1;
+      const valueRowsRegex = /\(([^)]+)\)/g;
+      const valueRows: { values: string[]; position: number }[] = [];
+      let valueRowMatch: RegExpExecArray | null;
+      let searchStartPos = text.indexOf(valuesGroupStr, valuesClauseStart);
+
+      while ((valueRowMatch = valueRowsRegex.exec(valuesGroupStr)) !== null) {
+        const rowText = valueRowMatch[0];
+        const rowValues = this.parseRowValues(valueRowMatch[1]);
+        const rowPosition = text.indexOf(rowText, searchStartPos);
+
+        if (rowPosition !== -1) {
+          valueRows.push({
+            values: rowValues,
+            position: rowPosition + 1,
+          });
+
+          searchStartPos = rowPosition + rowText.length;
+        }
+      }
 
       yield {
         columns: this.parseColumns(columnsStr),
-        values: this.parseValues(valuesStr),
-        valuesStartPosition,
+        valueRows: valueRows,
       };
     }
   }
@@ -44,7 +61,7 @@ class SQLInsertInlayHintsProvider implements vscode.InlayHintsProvider {
     return columnsStr.split(",").map((col) => col.trim());
   }
 
-  private parseValues(valuesStr: string): string[] {
+  private parseRowValues(valuesStr: string): string[] {
     const values: string[] = [];
     let currentValue = "";
     let inString = false;
@@ -90,21 +107,34 @@ class SQLInsertInlayHintsProvider implements vscode.InlayHintsProvider {
   }
 
   private isValidInsert(statement: ParsedInsert): boolean {
-    return statement.columns.length === statement.values.length;
+    if (!statement.valueRows || statement.valueRows.length === 0) {
+      return false;
+    }
+
+    for (const row of statement.valueRows) {
+      if (row.values.length !== statement.columns.length) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   private createHintsForInsert(document: vscode.TextDocument, statement: ParsedInsert, hints: vscode.InlayHint[]): void {
-    let currentPos = statement.valuesStartPosition;
+    for (const row of statement.valueRows) {
+      let currentPos = row.position;
 
-    for (let i = 0; i < statement.values.length; i++) {
-      const value = statement.values[i].trim();
-      const valuePos = document.getText().indexOf(value, currentPos);
+      for (let i = 0; i < statement.columns.length; i++) {
+        const value = row.values[i].trim();
+        const documentText = document.getText();
+        const valuePos = documentText.indexOf(value, currentPos);
 
-      if (valuePos !== -1) {
-        const hint = new vscode.InlayHint(document.positionAt(valuePos), `${statement.columns[i]}: `, vscode.InlayHintKind.Parameter);
+        if (valuePos !== -1) {
+          const hint = new vscode.InlayHint(document.positionAt(valuePos), `${statement.columns[i]}: `, vscode.InlayHintKind.Parameter);
 
-        hints.push(hint);
-        currentPos = valuePos + value.length;
+          hints.push(hint);
+          currentPos = valuePos + value.length;
+        }
       }
     }
   }
