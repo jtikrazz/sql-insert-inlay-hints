@@ -1,0 +1,9 @@
+{
+  "singleQuote": true,
+  "trailingComma": "all",
+  "bracketSpacing": true,
+  "endOfLine": "auto",
+  "printWidth": 100,
+  "singleAttributePerLine": true,
+  "experimentalOperatorPosition": "start"
+}

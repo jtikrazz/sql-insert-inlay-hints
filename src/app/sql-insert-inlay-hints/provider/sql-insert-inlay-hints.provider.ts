@@ -1,10 +1,15 @@
-import * as vscode from "vscode";
-import { ParsedInsert } from "../type/parsed-insert.type";
+import * as vscode from 'vscode';
+import { ParsedInsert } from '../type/parsed-insert.type';
 
-const SQL_INSERT_PATTERN = /INSERT\s+INTO\s+"?\w+"?\s*\((.*?)\)\s*VALUES\s*((?:\s*\([^)]+\)\s*,?)+)/gis;
+const SQL_INSERT_PATTERN =
+  /INSERT\s+INTO\s+"?\w+"?\s*\((.*?)\)\s*VALUES\s*((?:\s*\([^)]+\)\s*,?)+)/gis;
 
 class SQLInsertInlayHintsProvider implements vscode.InlayHintsProvider {
-  public async provideInlayHints(document: vscode.TextDocument, range: vscode.Range, token: vscode.CancellationToken): Promise<vscode.InlayHint[]> {
+  public async provideInlayHints(
+    document: vscode.TextDocument,
+    range: vscode.Range,
+    token: vscode.CancellationToken,
+  ): Promise<vscode.InlayHint[]> {
     const text = document.getText();
     const hints: vscode.InlayHint[] = [];
 
@@ -29,7 +34,7 @@ class SQLInsertInlayHintsProvider implements vscode.InlayHintsProvider {
     while ((match = SQL_INSERT_PATTERN.exec(text)) !== null) {
       const columnsStr = match[1];
       const valuesGroupStr = match[2];
-      const valuesClauseStart = text.toUpperCase().indexOf("VALUES", match.index);
+      const valuesClauseStart = text.toUpperCase().indexOf('VALUES', match.index);
       const valueRowsRegex = /\(([^)]+)\)/g;
       const valueRows: { values: string[]; position: number }[] = [];
       let valueRowMatch: RegExpExecArray | null;
@@ -58,19 +63,19 @@ class SQLInsertInlayHintsProvider implements vscode.InlayHintsProvider {
   }
 
   private parseColumns(columnsStr: string): string[] {
-    return columnsStr.split(",").map((col) => col.trim());
+    return columnsStr.split(',').map((col) => col.trim());
   }
 
   private parseRowValues(valuesStr: string): string[] {
     const values: string[] = [];
-    let currentValue = "";
+    let currentValue = '';
     let inString = false;
     let parenthesesDepth = 0;
 
     for (const char of valuesStr) {
       if (this.shouldStartNewValue(char, inString, parenthesesDepth)) {
         values.push(currentValue.trim());
-        currentValue = "";
+        currentValue = '';
         continue;
       }
 
@@ -87,15 +92,15 @@ class SQLInsertInlayHintsProvider implements vscode.InlayHintsProvider {
   }
 
   private shouldStartNewValue(char: string, inString: boolean, depth: number): boolean {
-    return char === "," && !inString && depth === 0;
+    return char === ',' && !inString && depth === 0;
   }
 
   private updateParenthesesDepth(char: string, inString: boolean, depth: number): number {
     if (inString) {
       return depth;
-    } else if (char === "(") {
+    } else if (char === '(') {
       return depth + 1;
-    } else if (char === ")") {
+    } else if (char === ')') {
       return depth - 1;
     }
 
@@ -120,7 +125,11 @@ class SQLInsertInlayHintsProvider implements vscode.InlayHintsProvider {
     return true;
   }
 
-  private createHintsForInsert(document: vscode.TextDocument, statement: ParsedInsert, hints: vscode.InlayHint[]): void {
+  private createHintsForInsert(
+    document: vscode.TextDocument,
+    statement: ParsedInsert,
+    hints: vscode.InlayHint[],
+  ): void {
     for (const row of statement.valueRows) {
       let currentPos = row.position;
 
@@ -130,7 +139,11 @@ class SQLInsertInlayHintsProvider implements vscode.InlayHintsProvider {
         const valuePos = documentText.indexOf(value, currentPos);
 
         if (valuePos !== -1) {
-          const hint = new vscode.InlayHint(document.positionAt(valuePos), `${statement.columns[i]}: `, vscode.InlayHintKind.Parameter);
+          const hint = new vscode.InlayHint(
+            document.positionAt(valuePos),
+            `${statement.columns[i]}: `,
+            vscode.InlayHintKind.Parameter,
+          );
 
           hints.push(hint);
           currentPos = valuePos + value.length;
@@ -141,6 +154,6 @@ class SQLInsertInlayHintsProvider implements vscode.InlayHintsProvider {
 }
 
 export const SQL_INSERT_INLAY_HINTS_PROVIDER = vscode.languages.registerInlayHintsProvider(
-  { scheme: "file", language: "sql" },
-  new SQLInsertInlayHintsProvider()
+  { scheme: 'file', language: 'sql' },
+  new SQLInsertInlayHintsProvider(),
 );
