@@ -14,3 +14,6 @@ VALUES
 
 INSERT INTO `notify` (`notify_id`, `notify_name`)
 VALUES (1, 'google_notify_record');
+
+INSERT INTO rush_order.pizza (id, name, address)
+VALUES (1, 'Jonh', '1234 Main St.');

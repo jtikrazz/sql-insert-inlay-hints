@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { ParsedInsert } from '../type/parsed-insert.type';
 
 const SQL_INSERT_PATTERN =
-  /INSERT\s+INTO\s+["`]?\w+["`]?\s*\((.*?)\)\s*VALUES\s*((?:\s*\([^)]+\)\s*,?)+)/gis;
+  /INSERT\s+INTO\s+(?:["`]?[\w]+["`]?)(?:\.["`]?[\w]+["`]?)?\s*\((.*?)\)\s*VALUES\s*((?:\s*\([^)]+\)\s*,?)+)/gis;
 
 class SQLInsertInlayHintsProvider implements vscode.InlayHintsProvider {
   public async provideInlayHints(
